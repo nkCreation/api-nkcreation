@@ -20,6 +20,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "14"
+      - name: Create .ENV file
         run: |
           touch .env
           echo HOST=${{ secrets.ENV_HOST }} >> .env

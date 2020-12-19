@@ -52,6 +52,7 @@ jobs:
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: ${{ secrets.REMOTE_TARGET }}
       - name: Start server
         uses: appleboy/ssh-action@master
         with:
@@ -59,4 +60,4 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.REMOTE_PORT }}
-          script: cd api-nkcreation && pm2 del --silent apinkcreation && pm2 start npm --name apinkcreation -- run start
+          script: . deploy.sh

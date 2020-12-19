@@ -60,4 +60,4 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.REMOTE_PORT }}
-          script: . deploy.sh
+          script: cd api-nkcreation && pm2 del --silent apinkcreation && pm2 start npm --name apinkcreation -- run start

@@ -1,0 +1,62 @@
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+jobs:
+  # —— 🚀 Deployment
+  deploy:
+    runs-on: ubuntu-latest
+    if: contains('refs/heads/master', github.ref) == true
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+      - name: Install npm dependencies
+        run: npm install
+      - name: Run build task
+        run: NODE_ENV=production npm run build
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v1
+        with:
+          envkey_HOST: ${{ secrets.ENV_HOST }}
+          envkey_PORT: ${{ secrets.ENV_PORT }}
+          envkey_DATABASE_HOST: ${{ secrets.ENV_DATABASE_HOST }}
+          envkey_DATABASE_PORT: ${{ secrets.ENV_DATABASE_PORT }}
+          envkey_DATABASE_NAME: ${{ secrets.ENV_DATABASE_NAME }}
+          envkey_DATABASE_USERNAME: ${{ secrets.ENV_DATABASE_USERNAME }}
+          envkey_DATABASE_PASSWORD: ${{ secrets.ENV_DATABASE_PASSWORD }}
+          envkey_MAILJET_PUBLIC_KEY: ${{ secrets.ENV_MAILJET_PUBLIC_KEY }}
+          envkey_MAILJET_SECRET_KEY: ${{ secrets.ENV_MAILJET_SECRET_KEY }}
+          envkey_MAILJET_FROM: ${{ secrets.ENV_MAILJET_FROM }}
+          envkey_MAILJET_FROM_NAME: ${{ secrets.ENV_MAILJET_FROM_NAME }}
+          envkey_MAILJET_TO: ${{ secrets.ENV_MAILJET_TO }}
+          envkey_MAILJET_TO_NAME: ${{ secrets.ENV_MAILJET_TO_NAME }}
+          envkey_ADMIN_JWT_SECRET: ${{ secrets.ENV_ADMIN_JWT_SECRET }}
+          envkey_NODE_ENV: ${{ secrets.ENV_NODE_ENV }}
+          envkey_SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      - name: Deploy to Server
+        uses: easingthemes/ssh-deploy@v2.1.5
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rltgoDzvO --delete"
+          SOURCE: "./"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+      - name: Start server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.REMOTE_PORT }}
+          script: cd api-nkcreation && pm2 del --silent apinkcreation && pm2 start npm --name apinkcreation -- run start

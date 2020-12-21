@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_blocks_texts",
+  "info": {
+    "name": "text",
+    "icon": "align-left"
+  },
+  "options": {},
+  "attributes": {
+    "content": {
+      "type": "richtext"
+    }
+  }
+}

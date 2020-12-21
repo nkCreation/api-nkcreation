@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_codeblock_codeblocks",
+  "info": {
+    "name": "code",
+    "icon": "code",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "language": {
+      "type": "string"
+    },
+    "code": {
+      "type": "text"
+    }
+  }
+}

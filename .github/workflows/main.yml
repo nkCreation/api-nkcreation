@@ -10,17 +10,26 @@ on:
 
 jobs:
   # —— 🚀 Deployment
-  deploy:
-    runs-on: ubuntu-latest
+  ci:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [14]
+
     if: contains('refs/heads/master', github.ref) == true
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Install Node.js
-        uses: actions/setup-node@v2
+      - name: Checkout 🛎
+        uses: actions/checkout@master
+
+      - name: Setup node env 🏗
+        uses: actions/setup-node@v2.1.2
         with:
-          node-version: "14"
-      - name: Create .ENV file
+          node-version: ${{ matrix.node }}
+
+      - name: Create .ENV file 🏗
         run: |
           touch .env
           echo HOST=${{ secrets.ENV_HOST }} >> .env
@@ -39,11 +48,22 @@ jobs:
           echo ADMIN_JWT_SECRET=${{ secrets.ENV_ADMIN_JWT_SECRET }} >> .env
           echo NODE_ENV=${{ secrets.ENV_NODE_ENV }} >> .env
           echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
-      - name: Install npm dependencies
-        run: npm install
-      - name: Run build task
+
+      - name: Cache node_modules 📦
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies 👨🏻‍💻
+        run: npm ci
+
+      - name: Run build task 🛠
         run: NODE_ENV=production npm run build
-      - name: Deploy to Server
+
+      - name: Deploy to Server 🚀
         uses: easingthemes/ssh-deploy@v2.1.5
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -53,7 +73,8 @@ jobs:
           REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           TARGET: ${{ secrets.REMOTE_TARGET }}
-      - name: Start server
+
+      - name: Start server ✅
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.REMOTE_HOST }}

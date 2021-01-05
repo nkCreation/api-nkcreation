@@ -3,8 +3,6 @@ name: CI
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
-  pull_request:
-    branches: [master]
   push:
     branches: [master]
 
@@ -62,6 +60,11 @@ jobs:
 
       - name: Run build task 🛠
         run: NODE_ENV=production npm run build
+
+      - name: Semantic release 🚀
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
 
       - name: Deploy to Server 🚀
         uses: easingthemes/ssh-deploy@v2.1.5
